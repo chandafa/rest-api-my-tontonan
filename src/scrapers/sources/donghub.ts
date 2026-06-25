@@ -297,12 +297,16 @@ export class DonghubAdapter extends BaseAdapter {
     }
 
     if (dmId) {
-      // Dailymotion is adaptive; expose explicit quality choices via the embed
-      // `quality=` param so the user can pick 1080p (default) in the WebView.
-      const base = `https://www.dailymotion.com/embed/video/${dmId}`;
+      // Use the SAME geo player the source site uses (it supports 1080p; the
+      // generic /embed/video/ player caps at 720p on mobile). Reuse the page's
+      // exact iframe URL when present, else build it with the site's player id.
+      const geo =
+        iframeSrc && iframeSrc.includes('geo.dailymotion.com')
+          ? iframeSrc.split('&')[0]!
+          : `https://geo.dailymotion.com/player/xid0t.html?video=${dmId}`;
       const sources: VideoSource[] = DM_QUALITIES.map((q) => ({
         quality: q.label,
-        url: `${base}?quality=${q.value}&autoplay=1`,
+        url: `${geo}&quality=${q.value}`,
         type: 'hls',
       }));
       return { sources, embedUrl: sources[0]!.url };

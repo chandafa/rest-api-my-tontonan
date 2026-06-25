@@ -32,7 +32,8 @@ export type SourceId =
   | 'donghub'
   | 'anichin'
   | 'sankadonghua'
-  | 'bioskopkeren';
+  | 'iyengar'
+  | 'evilseniors';
 
 export interface AnimeSource {
   id: SourceId;
@@ -85,9 +86,14 @@ export const config = {
   /** Donghua source failover chain (primary first). */
   donghuaSources: envDonghuaSources(),
 
-  /** Film/movie source failover chain (primary first). */
+  /**
+   * Film/movie source failover chain (primary first). Both run the SAME generic
+   * GMR/muvipro adapter; iyengar is the verified primary, evilseniors the backup
+   * (a different live GMR site found as a fallback if the primary moves/blocks).
+   */
   filmSources: [
-    { id: 'bioskopkeren' as SourceId, baseUrl: process.env.SOURCE_BIOSKOPKEREN_URL ?? 'https://bioskop-keren.com' },
+    { id: 'iyengar' as SourceId, baseUrl: process.env.SOURCE_IYENGAR_URL ?? 'https://iyengaryogacenter.com' },
+    { id: 'evilseniors' as SourceId, baseUrl: process.env.SOURCE_EVILSENIORS_URL ?? 'https://evilseniors.com' },
   ],
 
   /** Allowed CORS origins. Empty array => allow all ('*'). */
