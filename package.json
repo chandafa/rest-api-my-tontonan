@@ -1,0 +1,29 @@
+{
+  "name": "my-anime-api",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Hono v4.12 scraper API for the Anime Streaming app (Vercel Hobby, Node 22). See SDD.md.",
+  "engines": {
+    "node": "22.x"
+  },
+  "scripts": {
+    "dev": "vercel dev",
+    "serve": "esbuild src/local-server.ts --bundle --platform=node --format=cjs --outfile=.local-server.cjs --log-level=error && node .local-server.cjs",
+    "build": "tsc --noEmit",
+    "typecheck": "tsc --noEmit",
+    "deploy": "vercel --prod"
+  },
+  "dependencies": {
+    "@hono/zod-validator": "^0.4.0",
+    "cheerio": "^1.0.0",
+    "hono": "^4.12.0",
+    "zod": "^3.23.0"
+  },
+  "devDependencies": {
+    "@hono/node-server": "^2.0.6",
+    "@types/node": "^22.0.0",
+    "esbuild": "^0.24.0",
+    "typescript": "^5.4.0",
+    "vercel": "^39.0.0"
+  }
+}
