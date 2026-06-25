@@ -46,10 +46,14 @@ const DM_DEFAULT_LADDER: ReadonlyArray<readonly [string, string]> = [
  * UA so Dailymotion serves the requested quality.
  */
 export async function buildDailymotionSources(videoId: string): Promise<DmSource[]> {
-  const base = `https://www.dailymotion.com/embed/video/${videoId}`;
+  // Use the modern GEO player (`geo.dailymotion.com/player.html`), NOT the legacy
+  // `/embed/video/` player: the legacy one caps WebView playback at 1080p and
+  // strips the quality param on its 301 redirect, whereas the geo player serves
+  // the full ladder up to 2160p/4K. (No partner id => no injected ads.)
+  const base = `https://geo.dailymotion.com/player.html?video=${videoId}`;
   const make = (label: string, q: string): DmSource => ({
     quality: label,
-    url: `${base}?quality=${q}&autoplay=1`,
+    url: `${base}&quality=${q}&autoplay=1`,
     type: 'hls',
   });
 

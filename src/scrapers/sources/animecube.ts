@@ -237,14 +237,16 @@ export class AnimecubeAdapter extends BaseAdapter {
     let sources: VideoSource[] = [];
     let embedUrl = '';
     if (dm?.privateId || dm?.videoId) {
+      // Play via the private id on the modern GEO player — it serves the real 4K
+      // ladder (the legacy /embed/ player caps at 1080p in a WebView).
       const id = dm.privateId || dm.videoId!;
-      const base = `https://www.dailymotion.com/embed/video/${id}`;
+      const base = `https://geo.dailymotion.com/player.html?video=${id}`;
       sources = ladderFor(dm.quality ?? '').map(([label, q]) => ({
         quality: label,
-        url: `${base}?quality=${q}&autoplay=1`,
+        url: `${base}&quality=${q}&autoplay=1`,
         type: 'hls' as const,
       }));
-      sources.push({ quality: 'Auto', url: `${base}?quality=auto&autoplay=1`, type: 'hls' });
+      sources.push({ quality: 'Auto', url: `${base}&quality=auto&autoplay=1`, type: 'hls' });
       embedUrl = sources[0]!.url;
     } else {
       // Fallback: Rumble embed plays in the WebView too.
