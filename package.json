@@ -7,11 +7,10 @@
     "node": "22.x"
   },
   "scripts": {
-    "dev": "vercel dev",
+    "dev": "npx vercel dev",
     "serve": "esbuild src/local-server.ts --bundle --platform=node --format=cjs --outfile=.local-server.cjs --log-level=error && node .local-server.cjs",
-    "build": "tsc --noEmit",
     "typecheck": "tsc --noEmit",
-    "deploy": "vercel --prod"
+    "deploy": "npx vercel --prod"
   },
   "dependencies": {
     "@hono/zod-validator": "^0.4.0",
@@ -23,7 +22,6 @@
     "@hono/node-server": "^2.0.6",
     "@types/node": "^22.0.0",
     "esbuild": "^0.24.0",
-    "typescript": "^5.4.0",
-    "vercel": "^39.0.0"
+    "typescript": "^5.4.0"
   }
 }
