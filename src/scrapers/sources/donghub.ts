@@ -297,16 +297,15 @@ export class DonghubAdapter extends BaseAdapter {
     }
 
     if (dmId) {
-      // Use the SAME geo player the source site uses (it supports 1080p; the
-      // generic /embed/video/ player caps at 720p on mobile). Reuse the page's
-      // exact iframe URL when present, else build it with the site's player id.
-      const geo =
-        iframeSrc && iframeSrc.includes('geo.dailymotion.com')
-          ? iframeSrc.split('&')[0]!
-          : `https://geo.dailymotion.com/player/xid0t.html?video=${dmId}`;
+      // Default Dailymotion embed — NO ads. (The site's geo/partner player
+      // `geo.dailymotion.com/player/xid0t.html` shows 1080p but injects pre-roll
+      // ads; this default player is ad-free.) The app loads it in a WebView with
+      // a DESKTOP user-agent so Dailymotion lifts its mobile 720p cap and serves
+      // up to 1080p via the `quality=` param below.
+      const base = `https://www.dailymotion.com/embed/video/${dmId}`;
       const sources: VideoSource[] = DM_QUALITIES.map((q) => ({
         quality: q.label,
-        url: `${geo}&quality=${q.value}`,
+        url: `${base}?quality=${q.value}&autoplay=1`,
         type: 'hls',
       }));
       return { sources, embedUrl: sources[0]!.url };

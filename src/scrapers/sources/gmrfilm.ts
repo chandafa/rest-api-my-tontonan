@@ -37,13 +37,7 @@ const SEL = {
   detailTitle: 'h1.entry-title, .entry-title, h1',
   detailPoster: 'figure.pull-left img, .gmr-movie-data img, [itemprop="image"], .thumb img, article img',
   detailGenre: 'span[itemprop="genre"] a, .gmr-movie-genre a, a[rel="tag"]',
-  playerIframe: '#muvipro_player_content_id iframe, .gmr-embed-responsive iframe, .gmrelated iframe, iframe',
 } as const;
-
-// Known stand-alone player hosts: when the page exposes one of these directly we
-// load it in the WebView (cleaner than the whole movie page, which carries ads).
-const CLEAN_PLAYER_HOST =
-  /(playerp2p|dailymotion|geo\.dailymotion|dood|filemoon|streamtape|mp4upload|ok\.ru|short\.icu|emturbovid|vidhide|streamwish|filelions|abysscdn|pixeldrain)/i;
 
 // Taxonomy / non-movie permalinks to skip when harvesting cards.
 const TAXONOMY = /\/(category|genre|tag|country|year|director|cast|network|quality|season|tv-show|page)\//i;
@@ -200,32 +194,17 @@ export class GmrFilmAdapter extends BaseAdapter {
   }
 
   async scrapeEpisode(nativeSlug: string): Promise<EpisodeData> {
-    // Default: load the movie PAGE in the WebView (the theme's JS builds the
-    // player). If a clean stand-alone player iframe is present, prefer it.
-    let embed = nativeSlug;
-    let title = slugTitle(nativeSlug) || 'Film';
-    try {
-      const html = await sourceGet<string>(this.client, nativeSlug);
-      const $ = cheerio.load(html);
-      title = cleanText($(SEL.detailTitle).first().text()).replace(/^Nonton\s+(Film\s+)?/i, '').trim() || title;
-      for (const el of $(SEL.playerIframe).toArray()) {
-        const src = $(el).attr('src') || $(el).attr('data-litespeed-src') || $(el).attr('data-src');
-        if (src && /^https?:\/\//i.test(src) && CLEAN_PLAYER_HOST.test(src)) {
-          embed = src.startsWith('//') ? `https:${src}` : src;
-          break;
-        }
-      }
-    } catch {
-      /* page slow/unreachable — embed stays as the page URL, still playable */
-    }
+    // The in-app WebView loads the movie PAGE directly: the theme's own JS builds
+    // the player client-side. Loading the bare player iframe instead black-screens
+    // (it needs its parent page's context/referer). Instant — no server fetch.
     return {
-      anime_title: title,
+      anime_title: slugTitle(nativeSlug) || 'Film',
       anime_slug: this.enc(nativeSlug),
       episode_number: 1,
       sources: [],
       prev_episode_slug: null,
       next_episode_slug: null,
-      embed_url: embed,
+      embed_url: nativeSlug,
     };
   }
 }

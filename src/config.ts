@@ -32,6 +32,7 @@ export type SourceId =
   | 'donghub'
   | 'anichin'
   | 'sankadonghua'
+  | 'maratondonghua'
   | 'iyengar'
   | 'evilseniors';
 
@@ -64,6 +65,12 @@ function envDonghuaSources(): AnimeSource[] {
   // Dailymotion streams end-to-end; sankavollerei's donghua JSON API is the
   // backup catalog (its anichin embeds are anti-debug and rarely playable).
   return [
+    // PRIORITY: the maratondonghua Dailymotion channel via the official Data API
+    // — original renditions up to 1440p/2160p, clean JSON, no HTML scraping.
+    {
+      id: 'maratondonghua',
+      baseUrl: process.env.SOURCE_MARATONDONGHUA_URL ?? 'https://api.dailymotion.com',
+    },
     // Order = benchmark result: donghub fastest data + working + Dailymotion.
     { id: 'donghub', baseUrl: process.env.SOURCE_DONGHUB_URL ?? 'https://donghub.vip' },
     { id: 'anichin', baseUrl: process.env.SOURCE_ANICHIN_URL ?? 'https://anichin.moe' },

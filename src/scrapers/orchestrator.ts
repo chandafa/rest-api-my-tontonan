@@ -26,6 +26,7 @@ import { AnichinRoAdapter } from './sources/anichinro';
 import { AnixPlAdapter } from './sources/anixpl';
 import { DonghubAdapter } from './sources/donghub';
 import { GmrFilmAdapter } from './sources/gmrfilm';
+import { MaratonDonghuaAdapter } from './sources/maratondonghua';
 import { NineAnimeAdapter } from './sources/nineanime';
 import { SankavollereiAdapter } from './sources/sankavollerei';
 import { SankavollereiDonghuaAdapter } from './sources/sankavollerei-donghua';
@@ -53,6 +54,8 @@ function buildAdapter(id: SourceId, source: { id: SourceId; baseUrl: string }): 
       return new AnichinRoAdapter(source);
     case 'sankadonghua':
       return new SankavollereiDonghuaAdapter(source);
+    case 'maratondonghua':
+      return new MaratonDonghuaAdapter(source);
     case 'iyengar':
     case 'evilseniors':
       return new GmrFilmAdapter(source);
