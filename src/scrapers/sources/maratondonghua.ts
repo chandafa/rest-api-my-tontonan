@@ -25,22 +25,11 @@ import type {
   HomeData,
   LatestEpisodeItem,
   SearchResultItem,
-  VideoSource,
 } from '../types';
+import { buildDailymotionSources } from '../util/dailymotion';
 
 const CHANNEL = 'maratondonghua';
 const VIDEO_FIELDS = 'id,title,thumbnail_480_url,thumbnail_720_url,created_time,duration';
-
-// Dailymotion `available_formats` token -> { app label, embed `quality=` value }.
-// Ordered best-first so the default (sources[0]) is the highest quality.
-const FORMAT_MAP: ReadonlyArray<readonly [string, string, string]> = [
-  ['uhd2160', '2160p (4K)', '2160'],
-  ['uhd1440', '1440p (2K)', '1440'],
-  ['hd1080', '1080p', '1080'],
-  ['hd720', '720p', '720'],
-  ['hq', '480p', '480'],
-  ['sd', '360p', '360'],
-];
 
 interface DmVideo {
   id: string;
@@ -225,36 +214,20 @@ export class MaratonDonghuaAdapter extends BaseAdapter {
 
   async scrapeEpisode(nativeSlug: string): Promise<EpisodeData> {
     const id = nativeSlug.replace(/^v:/, '');
-    const base = `https://www.dailymotion.com/embed/video/${id}`;
 
-    // Build quality options from the video's REAL available renditions (up to 4K).
-    let sources: VideoSource[] = [];
     let title = 'Donghua';
     try {
-      const meta = await sourceGet<{ title?: string; available_formats?: string[] }>(
-        this.client,
-        `/video/${id}?fields=title,available_formats`,
-        { responseType: 'json' },
-      );
+      const meta = await sourceGet<{ title?: string }>(this.client, `/video/${id}?fields=title`, {
+        responseType: 'json',
+      });
       if (meta.title) title = meta.title;
-      const formats = new Set(meta.available_formats ?? []);
-      sources = FORMAT_MAP.filter(([fmt]) => formats.has(fmt)).map(([, label, q]) => ({
-        quality: label,
-        url: `${base}?quality=${q}&autoplay=1`,
-        type: 'hls' as const,
-      }));
     } catch {
-      /* metadata fetch failed — fall back to a sensible default ladder below */
+      /* title is best-effort */
     }
-    if (sources.length === 0) {
-      sources = [
-        { quality: '1080p', url: `${base}?quality=1080&autoplay=1`, type: 'hls' },
-        { quality: '720p', url: `${base}?quality=720&autoplay=1`, type: 'hls' },
-        { quality: '480p', url: `${base}?quality=480&autoplay=1`, type: 'hls' },
-      ];
-    }
-    // "Auto" lets the player adapt to bandwidth as a last entry.
-    sources.push({ quality: 'Auto', url: `${base}?quality=auto&autoplay=1`, type: 'hls' });
+
+    // Shared builder: GEO player URLs (real 4K, ad-free) sized to the video's
+    // actual renditions via the Dailymotion Data API.
+    const sources = await buildDailymotionSources(id);
 
     return {
       anime_title: title,
