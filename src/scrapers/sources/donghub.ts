@@ -26,7 +26,7 @@ import type {
   SearchResultItem,
   VideoSource,
 } from '../types';
-import { dailymotionId } from '../util/dailymotion';
+import { buildDailymotionSources, dailymotionId } from '../util/dailymotion';
 import {
   absoluteUrl,
   cleanText,
@@ -297,17 +297,11 @@ export class DonghubAdapter extends BaseAdapter {
     }
 
     if (dmId) {
-      // Default Dailymotion embed — NO ads. (The site's geo/partner player
-      // `geo.dailymotion.com/player/xid0t.html` shows 1080p but injects pre-roll
-      // ads; this default player is ad-free.) The app loads it in a WebView with
-      // a DESKTOP user-agent so Dailymotion lifts its mobile 720p cap and serves
-      // up to 1080p via the `quality=` param below.
-      const base = `https://www.dailymotion.com/embed/video/${dmId}`;
-      const sources: VideoSource[] = DM_QUALITIES.map((q) => ({
-        quality: q.label,
-        url: `${base}?quality=${q.value}&autoplay=1`,
-        type: 'hls',
-      }));
+      // Ad-free default Dailymotion embed, with REAL renditions (up to 4K) pulled
+      // from the Data API. (The site's geo/partner player injects ads; this one
+      // doesn't.) The app's WebView uses a DESKTOP UA so the requested quality is
+      // actually served (mobile UAs are capped to 720p).
+      const sources = await buildDailymotionSources(dmId);
       return { sources, embedUrl: sources[0]!.url };
     }
 
@@ -316,14 +310,6 @@ export class DonghubAdapter extends BaseAdapter {
     return { sources: dedupeAndSortSources(collected), embedUrl: '' };
   }
 }
-
-/** Dailymotion quality options (highest first; default 1080p). */
-const DM_QUALITIES = [
-  { label: '1080p', value: '1080' },
-  { label: '720p', value: '720' },
-  { label: '480p', value: '480' },
-  { label: 'Auto', value: 'auto' },
-] as const;
 
 /** Decode a (possibly base64) mirror-option value to its raw HTML/URL. */
 function decodeMirrorValue(value?: string | null): string {

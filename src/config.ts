@@ -33,6 +33,8 @@ export type SourceId =
   | 'anichin'
   | 'sankadonghua'
   | 'maratondonghua'
+  | 'animexin'
+  | 'animecube'
   | 'iyengar'
   | 'evilseniors';
 
@@ -64,16 +66,21 @@ function envDonghuaSources(): AnimeSource[] {
   // Donghua failover chain. donghub.vip is primary because it yields playable
   // Dailymotion streams end-to-end; sankavollerei's donghua JSON API is the
   // backup catalog (its anichin embeds are anti-debug and rarely playable).
+  // The donghua chain is UNIONED + MERGED (not first-success failover): the home/
+  // search catalogs are combined across sources, and each series' episode list is
+  // merged across sources so missing episodes are filled in. Order below sets the
+  // card-display preference (full-catalog, reliable sites first); maratondonghua
+  // is kept for its 4K Dailymotion renditions which overlay matching episodes.
   return [
-    // PRIORITY: the maratondonghua Dailymotion channel via the official Data API
-    // — original renditions up to 1440p/2160p, clean JSON, no HTML scraping.
+    // User-chosen primary donghua sources (complete catalogs, latest resolution).
+    { id: 'animecube', baseUrl: process.env.SOURCE_ANIMECUBE_URL ?? 'https://animecube.live' },
+    { id: 'animexin', baseUrl: process.env.SOURCE_ANIMEXIN_URL ?? 'https://animexin.dev' },
+    { id: 'donghub', baseUrl: process.env.SOURCE_DONGHUB_URL ?? 'https://donghub.vip' },
+    { id: 'anichin', baseUrl: process.env.SOURCE_ANICHIN_URL ?? 'https://anichin.moe' },
     {
       id: 'maratondonghua',
       baseUrl: process.env.SOURCE_MARATONDONGHUA_URL ?? 'https://api.dailymotion.com',
     },
-    // Order = benchmark result: donghub fastest data + working + Dailymotion.
-    { id: 'donghub', baseUrl: process.env.SOURCE_DONGHUB_URL ?? 'https://donghub.vip' },
-    { id: 'anichin', baseUrl: process.env.SOURCE_ANICHIN_URL ?? 'https://anichin.moe' },
     { id: 'anichinro', baseUrl: process.env.SOURCE_ANICHINRO_URL ?? 'https://anichin.ro' },
     {
       id: 'sankadonghua',
@@ -99,8 +106,8 @@ export const config = {
    * (a different live GMR site found as a fallback if the primary moves/blocks).
    */
   filmSources: [
-    { id: 'iyengar' as SourceId, baseUrl: process.env.SOURCE_IYENGAR_URL ?? 'https://iyengaryogacenter.com' },
     { id: 'evilseniors' as SourceId, baseUrl: process.env.SOURCE_EVILSENIORS_URL ?? 'https://evilseniors.com' },
+    { id: 'iyengar' as SourceId, baseUrl: process.env.SOURCE_IYENGAR_URL ?? 'https://iyengaryogacenter.com' },
   ],
 
   /** Allowed CORS origins. Empty array => allow all ('*'). */

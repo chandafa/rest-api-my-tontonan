@@ -67,7 +67,7 @@ export class GmrFilmAdapter extends BaseAdapter {
     if (!href || TAXONOMY.test(href) || /[?#]/.test(href)) return null;
     const $img = $el.find(SEL.cardImg).first();
     const title = cleanText(
-      ($a.attr('title') || '').replace(/^Permalink ke:\s*/i, '') ||
+      ($a.attr('title') || '').replace(/^Permalink (ke|to):\s*/i, '') ||
         $el.find(SEL.cardTitle).first().text() ||
         $img.attr('alt') ||
         '',
