@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
     "target": "ESNext",
-    "module": "ESNext",
-    "moduleResolution": "Bundler",
+    "module": "CommonJS",
+    "moduleResolution": "Node",
     "lib": ["ESNext"],
     "types": ["node"],
     "strict": true,
@@ -15,7 +15,6 @@
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
     "skipLibCheck": true,
-    "verbatimModuleSyntax": true,
     "noEmit": true,
     "isolatedModules": true
   },
